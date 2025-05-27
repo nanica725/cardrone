@@ -1,23 +1,24 @@
 <!DOCTYPE html>
-<!-- saved from url=(0035)https://crajhdod.gensparkspace.com/ -->
-<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cardrone - パーソナルカードローン管理ツール</title>
-    <link href="./index_files/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./index_files/all.min.css">
-    <script src="./index_files/chart.js.ダウンロード"></script>
-    <script src="./index_files/luxon.min.js.ダウンロード"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.3/build/global/luxon.min.js"></script>
     
-    <!-- Firebase SDKs -->
-    <script src="./index_files/firebase-app-compat.js.ダウンロード"></script>
-    <script src="./index_files/firebase-auth-compat.js.ダウンロード"></script>
-    <script src="./index_files/firebase-firestore-compat.js.ダウンロード"></script>
+    <!-- Firebase v8 SDK (compat version for better GitHub Pages support) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f9fafb;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
         .card {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -47,16 +48,9 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
         .btn-primary:hover {
             background-color: #2563eb;
-        }
-        .btn-primary:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
         }
         .btn-secondary {
             background-color: #64748b;
@@ -67,9 +61,6 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
         .btn-secondary:hover {
             background-color: #475569;
@@ -83,9 +74,6 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
         .btn-danger:hover {
             background-color: #dc2626;
@@ -99,9 +87,6 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
         .btn-success:hover {
             background-color: #059669;
@@ -111,7 +96,6 @@
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
             width: 100%;
-            box-sizing: border-box;
         }
         .form-group {
             margin-bottom: 1rem;
@@ -153,202 +137,110 @@
         .auto-payment-inactive {
             background-color: #d1d5db;
         }
-        .login-container {
-            min-height: 100vh;
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            z-index: 9999;
         }
-        .login-card {
+        .loading-content {
             background: white;
-            border-radius: 0.5rem;
             padding: 2rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
             text-align: center;
-            max-width: 400px;
-            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        .loading-spinner {
-            border: 3px solid #f3f4f6;
-            border-top: 3px solid #3b82f6;
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 0 auto 1rem;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .login-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
         .hidden {
             display: none !important;
         }
     </style>
-<style>
-    .genspark-notice-dialog {
-      display: flex;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 10001;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .genspark-notice-content {
-      background-color: white;
-      border-radius: 8px;
-      max-width: 600px;
-      width: 90%;
-      box-sizing: border-box;
-      padding: 10px 30px 30px 30px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      font-size: 16px;
-    }
-
-    .genspark-notice-title {
-      color: #000;
-      font-family: Arial;
-      font-size: 20px;
-      font-style: normal;
-      font-weight: 700;
-      line-height: 150%; 
-    }
-
-    .genspark-notice-list {
-      margin: 24px 0;
-      
-      color: #606366;
-      font-family: Arial;
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: 150%;
-      padding-left: 12px;
-    }
-
-    .genspark-notice-list li {
-      margin-bottom: 12px;
-      list-style-type: disc;
-    }
-
-    .genspark-notice-list li a {
-      color: #606366;
-      text-decoration: underline;
-    }
-
-    .genspark-notice-checkbox {
-      display: flex;
-      align-items: center;
-      margin-top: 20px;
-      gap: 10px;
-
-      color: #232425;
-
-      font-family: Arial;
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: normal;
-    }
-
-    .genspark-notice-actions {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-      
-    .genspark-notice-ok {
-      color: #232425;
-
-      text-align: center;
-      font-family: Arial;
-      font-size: 16px;
-      font-style: normal;
-      font-weight: 700;
-      line-height: 150%; 
-
-      cursor: pointer;
-      display: flex;
-      height: 40px;
-      padding: 6px 14px;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      align-self: stretch;
-      border-radius: 8px;
-      border: 1px solid #000;
-      box-sizing: border-box;
-      width: 100%;
-    }
-  </style></head>
+</head>
 <body>
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="login-container hidden">
-        <div class="login-card">
-            <div class="mb-4">
-                <i class="fas fa-credit-card text-4xl text-blue-500 mb-2"></i>
-                <h1 class="text-2xl font-bold text-gray-800">Cardrone</h1>
-                <p class="text-gray-600">パーソナルカードローン管理ツール</p>
-            </div>
-            <div class="loading-spinner mb-4"></div>
-            <p class="text-gray-600">Cardroneを起動中...</p>
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Cardrone</h2>
+            <p class="text-gray-600">パーソナルカードローン管理ツール</p>
+            <p class="text-sm text-blue-600 mt-2" id="loadingStatus">Cardroneを起動中...</p>
         </div>
     </div>
 
     <!-- Login Screen -->
-    <div id="loginScreen" class="login-container">
-        <div class="login-card">
-            <div class="mb-6">
-                <i class="fas fa-credit-card text-4xl text-blue-500 mb-2"></i>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Cardrone</h1>
-                <p class="text-gray-600">パーソナルカードローン管理ツール</p>
+    <div id="loginScreen" class="login-screen hidden">
+        <div class="login-content">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">Cardrone</h1>
+            <p class="text-gray-600 mb-6">パーソナルカードローン管理ツール</p>
+            <div class="text-4xl text-blue-500 mb-6">
+                <i class="fas fa-credit-card"></i>
             </div>
-            
-            <div class="space-y-4">
-                <button id="googleLoginBtn" class="btn-primary w-full py-3 text-lg">
-                    <i class="fab fa-google mr-2"></i> Googleでログイン
-                </button>
-                
-                <div class="text-gray-500">または</div>
-                
-                <button id="anonymousLoginBtn" class="btn-secondary w-full py-3">
-                    <i class="fas fa-user-secret mr-2"></i> 匿名でログイン（テスト用）
-                </button>
-            </div>
-            
-            <div class="mt-6 text-sm text-gray-500">
-                <div class="flex items-center justify-center mb-2">
-                    <i class="fas fa-cloud text-blue-500 mr-1"></i>
-                    <span>クラウド同期でどの端末からでもアクセス可能</span>
-                </div>
-                <div class="flex items-center justify-center">
-                    <i class="fas fa-shield-alt text-green-500 mr-1"></i>
-                    <span>データは安全に暗号化されて保存されます</span>
-                </div>
+            <button id="googleSignInBtn" class="btn-primary w-full mb-4">
+                <i class="fab fa-google mr-2"></i> Googleでログイン
+            </button>
+            <p class="text-xs text-gray-500 mb-2">または</p>
+            <button id="anonymousSignInBtn" class="btn-secondary w-full">
+                <i class="fas fa-user-secret mr-2"></i> 匿名でログイン（テスト用）
+            </button>
+            <div class="mt-6 text-xs text-gray-500">
+                <p><i class="fas fa-cloud mr-1"></i> クラウド同期でどの端末からでもアクセス可能</p>
+                <p><i class="fas fa-shield-alt mr-1"></i> データは安全に暗号化されて保存されます</p>
             </div>
         </div>
     </div>
 
-    <!-- Main Application -->
-    <div id="appScreen" class="min-h-screen p-4 sm:p-6 hidden">
+    <!-- Main App -->
+    <div id="mainApp" class="hidden min-h-screen p-4 sm:p-6">
         <div class="container mx-auto max-w-6xl">
-            <!-- Header -->
             <header class="mb-8 text-center">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">Cardrone</h1>
-                        <p class="text-gray-600">カードローン借金管理ツール</p>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div id="userInfo" class="text-right"></div>
-                        <button id="logoutBtn" class="btn-secondary">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Cardrone</h1>
+                    <p class="text-gray-600">パーソナルカードローン管理ツール</p>
+                    <div class="mt-4 flex justify-center items-center space-x-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            <span id="userEmail">Loading...</span>
+                        </div>
+                        <button id="signOutBtn" class="btn-danger text-xs">
                             <i class="fas fa-sign-out-alt mr-1"></i> ログアウト
                         </button>
                     </div>
@@ -358,7 +250,6 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Left Column: Form and Summary -->
                 <div class="lg:col-span-1">
-                    <!-- New Loan Form -->
                     <div class="bg-white rounded-lg shadow p-6 mb-8 card">
                         <h2 class="text-xl font-semibold mb-4 flex items-center">
                             <i class="fas fa-plus-circle text-blue-500 mr-2"></i>新しいカードローンを追加
@@ -366,19 +257,19 @@
                         <form id="newLoanForm">
                             <div class="form-group">
                                 <label for="loanName" class="form-label">ローン名</label>
-                                <input type="text" id="loanName" placeholder="○○銀行カードローン" required="">
+                                <input type="text" id="loanName" placeholder="○○銀行カードローン" required>
                             </div>
                             <div class="form-group">
                                 <label for="loanAmount" class="form-label">借入額 (円)</label>
-                                <input type="number" id="loanAmount" min="0" step="1000" placeholder="300000" required="">
+                                <input type="number" id="loanAmount" min="0" step="1000" placeholder="300000" required>
                             </div>
                             <div class="form-group">
                                 <label for="interestRate" class="form-label">金利 (年率%)</label>
-                                <input type="number" id="interestRate" min="0" step="0.01" placeholder="12.5" required="">
+                                <input type="number" id="interestRate" min="0" step="0.01" placeholder="12.5" required>
                             </div>
                             <div class="form-group">
                                 <label for="loanDate" class="form-label">借入日</label>
-                                <input type="date" id="loanDate" required="">
+                                <input type="date" id="loanDate" required>
                             </div>
                             <div class="mt-2">
                                 <div class="mb-2">
@@ -390,7 +281,7 @@
                                         <label for="paymentDay" class="form-label">毎月の引き落とし日</label>
                                         <select id="paymentDay">
                                             <option value="">選択してください</option>
-                                        <option value="1">1日</option><option value="2">2日</option><option value="3">3日</option><option value="4">4日</option><option value="5">5日</option><option value="6">6日</option><option value="7">7日</option><option value="8">8日</option><option value="9">9日</option><option value="10">10日</option><option value="11">11日</option><option value="12">12日</option><option value="13">13日</option><option value="14">14日</option><option value="15">15日</option><option value="16">16日</option><option value="17">17日</option><option value="18">18日</option><option value="19">19日</option><option value="20">20日</option><option value="21">21日</option><option value="22">22日</option><option value="23">23日</option><option value="24">24日</option><option value="25">25日</option><option value="26">26日</option><option value="27">27日</option><option value="28">28日</option><option value="29">29日</option><option value="30">30日</option><option value="31">31日</option><option value="end">月末</option></select>
+                                        </select>
                                     </div>
                                     <div class="form-group">
                                         <label for="paymentAmount" class="form-label">引き落とし金額 (円)</label>
@@ -404,7 +295,6 @@
                         </form>
                     </div>
 
-                    <!-- Summary -->
                     <div class="bg-white rounded-lg shadow p-6 mb-8 card">
                         <h2 class="text-xl font-semibold mb-4 flex items-center">
                             <i class="fas fa-chart-pie text-blue-500 mr-2"></i>借金概要
@@ -428,28 +318,7 @@
                             </div>
                         </div>
                         <div class="mt-6">
-                            <canvas id="totalDebtChart" width="0" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Data Management -->
-                    <div class="bg-white rounded-lg shadow p-6 card">
-                        <h2 class="text-xl font-semibold mb-4 flex items-center">
-                            <i class="fas fa-database text-blue-500 mr-2"></i>データ管理
-                        </h2>
-                        <div class="space-y-3">
-                            <button id="exportDataBtn" class="btn-secondary w-full">
-                                <i class="fas fa-file-export mr-2"></i>データをエクスポート
-                            </button>
-                            <div class="relative">
-                                <input type="file" id="importDataInput" accept=".json" class="hidden">
-                                <button id="importDataBtn" class="btn-secondary w-full">
-                                    <i class="fas fa-file-import mr-2"></i>データをインポート
-                                </button>
-                            </div>
-                            <button id="clearDataBtn" class="btn-danger w-full">
-                                <i class="fas fa-trash-alt mr-2"></i>全てのデータを削除
-                            </button>
+                            <canvas id="totalDebtChart" width="400" height="300"></canvas>
                         </div>
                     </div>
                 </div>
@@ -479,11 +348,11 @@
                 <input type="hidden" id="repaymentLoanId">
                 <div class="form-group">
                     <label for="repaymentDate" class="form-label">返済日</label>
-                    <input type="date" id="repaymentDate" required="">
+                    <input type="date" id="repaymentDate" required>
                 </div>
                 <div class="form-group">
                     <label for="repaymentAmount" class="form-label">返済額 (円)</label>
-                    <input type="number" id="repaymentAmount" min="0" step="1000" placeholder="10000" required="">
+                    <input type="number" id="repaymentAmount" min="0" step="1" placeholder="10000" required>
                 </div>
                 <div class="form-group">
                     <label for="repaymentNote" class="form-label">メモ (任意)</label>
@@ -513,7 +382,7 @@
                         <label for="editPaymentDay" class="form-label">毎月の引き落とし日</label>
                         <select id="editPaymentDay">
                             <option value="">選択してください</option>
-                        <option value="1">1日</option><option value="2">2日</option><option value="3">3日</option><option value="4">4日</option><option value="5">5日</option><option value="6">6日</option><option value="7">7日</option><option value="8">8日</option><option value="9">9日</option><option value="10">10日</option><option value="11">11日</option><option value="12">12日</option><option value="13">13日</option><option value="14">14日</option><option value="15">15日</option><option value="16">16日</option><option value="17">17日</option><option value="18">18日</option><option value="19">19日</option><option value="20">20日</option><option value="21">21日</option><option value="22">22日</option><option value="23">23日</option><option value="24">24日</option><option value="25">25日</option><option value="26">26日</option><option value="27">27日</option><option value="28">28日</option><option value="29">29日</option><option value="30">30日</option><option value="31">31日</option><option value="end">月末</option></select>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="editPaymentAmount" class="form-label">引き落とし金額 (円)</label>
@@ -535,11 +404,11 @@
                 <input type="hidden" id="editLoanId">
                 <div class="form-group">
                     <label for="editLoanName" class="form-label">ローン名</label>
-                    <input type="text" id="editLoanName" required="">
+                    <input type="text" id="editLoanName" required>
                 </div>
                 <div class="form-group">
                     <label for="editInterestRate" class="form-label">金利 (年率%)</label>
-                    <input type="number" id="editInterestRate" min="0" step="0.01" required="">
+                    <input type="number" id="editInterestRate" min="0" step="0.01" required>
                 </div>
                 <div class="flex justify-end space-x-3 mt-4">
                     <button type="button" id="cancelEditLoan" class="btn-secondary">キャンセル</button>
@@ -550,15 +419,8 @@
     </div>
 
     <script>
-        // Global variables
-        let firebaseApp;
-        let auth;
-        let firestore;
-        let currentUser = null;
-        let loans = [];
-        let totalDebtChart;
-        let firestoreListener = null;
-
+        console.log('Starting app initialization...');
+        
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCGEJMZEHI0QuZVE3aXPMW60FjYUxrFV0s",
@@ -566,8 +428,181 @@
             projectId: "cardrone-1d6c3",
             storageBucket: "cardrone-1d6c3.firebasestorage.app",
             messagingSenderId: "418896032854",
-            appId: "1:418896032854:web:1d109b5ced99ad5db6f7f7"
+            appId: "1:418896032854:web:1d109b5ced99ad5db6f7f7",
+            measurementId: "G-H7GTJ10NMR"
         };
+
+        // Global variables
+        let loans = [];
+        let totalDebtChart;
+        let currentUser = null;
+        let db = null;
+        let auth = null;
+
+        // Update loading status
+        function updateLoadingStatus(message) {
+            console.log(message);
+            document.getElementById('loadingStatus').textContent = message;
+        }
+
+        // Initialize Firebase
+        function initializeFirebase() {
+            try {
+                updateLoadingStatus('Firebaseを初期化中...');
+                
+                if (typeof firebase === 'undefined') {
+                    throw new Error('Firebase SDK not loaded');
+                }
+                
+                console.log('Initializing Firebase...');
+                firebase.initializeApp(firebaseConfig);
+                console.log('Firebase app initialized');
+                
+                auth = firebase.auth();
+                db = firebase.firestore();
+                console.log('Firebase services initialized');
+                
+                // Auth state listener
+                auth.onAuthStateChanged((user) => {
+                    console.log('Auth state changed:', user ? 'User logged in' : 'User not logged in');
+                    if (user) {
+                        currentUser = user;
+                        console.log('User logged in:', user.uid);
+                        showMainApp();
+                    } else {
+                        currentUser = null;
+                        console.log('User not logged in');
+                        showLoginScreen();
+                    }
+                });
+                
+                console.log('Firebase initialization complete');
+                updateLoadingStatus('認証状態を確認中...');
+                
+                return true;
+            } catch (error) {
+                console.error('Firebase initialization failed:', error);
+                updateLoadingStatus('エラー: Firebase初期化エラー: ' + error.message);
+                setTimeout(() => {
+                    alert('アプリケーション初期化エラー: ' + error.message);
+                }, 2000);
+                return false;
+            }
+        }
+
+        // Show login screen
+        function showLoginScreen() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        // Show main app
+        function showMainApp() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            // Update user info
+            if (currentUser) {
+                document.getElementById('userEmail').textContent = currentUser.email || currentUser.uid.substring(0, 8) + '...';
+            }
+            
+            // Load user data
+            loadUserData();
+        }
+
+        // Google Sign In
+        async function signInWithGoogle() {
+            try {
+                console.log('Starting Google sign in...');
+                updateLoadingStatus('Googleアカウントでログイン中...');
+                
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                console.log('Google sign in successful:', result.user.uid);
+                updateLoadingStatus('ログイン成功');
+            } catch (error) {
+                console.error('Google sign in failed:', error);
+                updateLoadingStatus('ログインエラー: ' + error.message);
+                alert('Googleログインに失敗しました: ' + error.message);
+            }
+        }
+
+        // Anonymous Sign In
+        async function signInAnonymously() {
+            try {
+                console.log('Starting anonymous sign in...');
+                updateLoadingStatus('匿名ログイン中...');
+                
+                const result = await auth.signInAnonymously();
+                console.log('Anonymous sign in successful:', result.user.uid);
+                updateLoadingStatus('ログイン成功');
+            } catch (error) {
+                console.error('Anonymous sign in failed:', error);
+                updateLoadingStatus('ログインエラー: ' + error.message);
+                alert('匿名ログインに失敗しました: ' + error.message);
+            }
+        }
+
+        // Sign Out
+        async function signOut() {
+            try {
+                await auth.signOut();
+                console.log('User signed out');
+            } catch (error) {
+                console.error('Sign out failed:', error);
+                alert('ログアウトに失敗しました: ' + error.message);
+            }
+        }
+
+        // Load user data from Firestore
+        async function loadUserData() {
+            if (!currentUser || !db) return;
+            
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    loans = userDoc.data().loans || [];
+                    console.log('Firestore data loaded');
+                } else {
+                    loans = [];
+                    console.log('No user data found, starting fresh');
+                }
+                updateUI();
+            } catch (error) {
+                console.error('Failed to load user data:', error);
+                loans = [];
+                updateUI();
+            }
+        }
+
+        // Save user data to Firestore
+        async function saveUserData() {
+            if (!currentUser || !db) return;
+            
+            try {
+                await db.collection('users').doc(currentUser.uid).set({
+                    loans: loans,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('Firestore data updated');
+            } catch (error) {
+                console.error('Failed to save user data:', error);
+            }
+        }
+
+        // Save individual loan to Firestore
+        async function saveLoanToFirestore(loan) {
+            if (!currentUser || !db) return;
+            
+            try {
+                await saveUserData();
+                console.log('Loan saved to Firestore');
+            } catch (error) {
+                console.error('Failed to save loan:', error);
+            }
+        }
 
         // Utility functions
         const formatCurrency = (amount) => {
@@ -592,311 +627,72 @@
             return amount * dailyRate;
         };
 
-        // Firebase initialization with error handling
-        async function initializeFirebase() {
-            try {
-                console.log('Initializing Firebase...');
-                
-                // Check if Firebase is loaded
-                if (typeof firebase === 'undefined') {
-                    throw new Error('Firebase SDK not loaded');
-                }
-
-                // Initialize Firebase app
-                firebaseApp = firebase.initializeApp(firebaseConfig);
-                console.log('Firebase app initialized');
-
-                // Initialize services
-                auth = firebase.auth();
-                firestore = firebase.firestore();
-                console.log('Firebase services initialized');
-
-                // Set up auth state listener
-                auth.onAuthStateChanged((user) => {
-                    console.log('Auth state changed:', user ? 'User logged in' : 'User not logged in');
-                    handleAuthStateChange(user);
-                });
-
-                console.log('Firebase initialization complete');
-                return true;
-            } catch (error) {
-                console.error('Firebase initialization error:', error);
-                showError('Firebase初期化エラー: ' + error.message);
-                return false;
-            }
-        }
-
-        // Show error message
-        function showError(message) {
-            alert('エラー: ' + message);
-        }
-
-        // Auth state change handler
-        function handleAuthStateChange(user) {
-            currentUser = user;
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing app...');
             
-            if (user) {
-                console.log('User logged in:', user.uid);
-                showAppScreen();
-                setupFirestoreListener();
-                updateUserInfo();
-            } else {
-                console.log('User not logged in');
-                showLoginScreen();
-                if (firestoreListener) {
-                    firestoreListener();
-                    firestoreListener = null;
+            // Initialize the current date for loan date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('loanDate').value = today;
+            document.getElementById('repaymentDate').value = today;
+
+            // Populate day select boxes
+            const daySelects = [document.getElementById('paymentDay'), document.getElementById('editPaymentDay')];
+            daySelects.forEach(select => {
+                for (let i = 1; i <= 31; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i}日`;
+                    select.appendChild(option);
                 }
-            }
-        }
-
-        // Screen management
-        function showLoadingScreen() {
-            document.getElementById('loadingScreen').classList.remove('hidden');
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.add('hidden');
-        }
-
-        function showLoginScreen() {
-            document.getElementById('loadingScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('appScreen').classList.add('hidden');
-        }
-
-        function showAppScreen() {
-            document.getElementById('loadingScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-        }
-
-        // Authentication functions
-        async function signInWithGoogle() {
-            try {
-                console.log('Starting Google sign in...');
-                const provider = new firebase.auth.GoogleAuthProvider();
-                provider.addScope('email');
-                provider.addScope('profile');
-                
-                const result = await auth.signInWithPopup(provider);
-                console.log('Google sign in successful:', result.user.uid);
-            } catch (error) {
-                console.error('Google sign in error:', error);
-                showError('Googleログインエラー: ' + error.message);
-            }
-        }
-
-        async function signInAnonymously() {
-            try {
-                console.log('Starting anonymous sign in...');
-                const result = await auth.signInAnonymously();
-                console.log('Anonymous sign in successful:', result.user.uid);
-            } catch (error) {
-                console.error('Anonymous sign in error:', error);
-                showError('匿名ログインエラー: ' + error.message);
-            }
-        }
-
-        async function signOut() {
-            try {
-                await auth.signOut();
-                console.log('Sign out successful');
-            } catch (error) {
-                console.error('Sign out error:', error);
-                showError('ログアウトエラー: ' + error.message);
-            }
-        }
-
-        // Update user info display
-        function updateUserInfo() {
-            if (currentUser) {
-                const userInfo = document.getElementById('userInfo');
-                if (currentUser.isAnonymous) {
-                    userInfo.innerHTML = '<div class="text-sm text-gray-600">匿名ユーザー</div>';
-                } else {
-                    userInfo.innerHTML = `
-                        <div class="text-sm text-gray-600">ログイン中</div>
-                        <div class="font-medium">${currentUser.displayName || currentUser.email || 'ユーザー'}</div>
-                    `;
-                }
-            }
-        }
-
-        // Firestore operations
-        function setupFirestoreListener() {
-            if (!currentUser) return;
-
-            const userRef = firestore.collection('users').doc(currentUser.uid).collection('loans');
-            
-            firestoreListener = userRef.onSnapshot((snapshot) => {
-                console.log('Firestore data updated');
-                loans = [];
-                snapshot.forEach((doc) => {
-                    loans.push({ id: doc.id, ...doc.data() });
-                });
-                updateUI();
-            }, (error) => {
-                console.error('Firestore listener error:', error);
-                showError('データ同期エラー: ' + error.message);
+                // Add end of month option
+                const endOption = document.createElement('option');
+                endOption.value = 'end';
+                endOption.textContent = '月末';
+                select.appendChild(endOption);
             });
-        }
 
-        async function saveLoanToFirestore(loan) {
-            if (!currentUser) return;
+            // Toggle auto payment settings
+            document.getElementById('enableAutoPayment').addEventListener('change', function() {
+                document.getElementById('autoPaymentSettings').classList.toggle('hidden', !this.checked);
+            });
 
-            try {
-                const userRef = firestore.collection('users').doc(currentUser.uid).collection('loans');
-                if (loan.id) {
-                    await userRef.doc(loan.id).set(loan);
-                } else {
-                    const docRef = await userRef.add(loan);
-                    loan.id = docRef.id;
-                }
-                console.log('Loan saved to Firestore');
-            } catch (error) {
-                console.error('Error saving loan:', error);
-                showError('データ保存エラー: ' + error.message);
+            document.getElementById('editEnableAutoPayment').addEventListener('change', function() {
+                document.getElementById('editAutoPaymentSettings').classList.toggle('hidden', !this.checked);
+            });
+
+            // Setup event listeners
+            document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
+            document.getElementById('anonymousSignInBtn').addEventListener('click', signInAnonymously);
+            document.getElementById('signOutBtn').addEventListener('click', signOut);
+
+            // Setup form submissions
+            document.getElementById('newLoanForm').addEventListener('submit', handleNewLoanSubmit);
+            document.getElementById('repaymentForm').addEventListener('submit', handleRepaymentSubmit);
+            document.getElementById('autoPaymentForm').addEventListener('submit', handleAutoPaymentSubmit);
+            document.getElementById('editLoanForm').addEventListener('submit', handleEditLoanSubmit);
+
+            // Setup modal cancel buttons
+            document.getElementById('cancelRepayment').addEventListener('click', () => {
+                document.getElementById('repaymentModal').classList.add('hidden');
+            });
+            document.getElementById('cancelAutoPayment').addEventListener('click', () => {
+                document.getElementById('autoPaymentModal').classList.add('hidden');
+            });
+            document.getElementById('cancelEditLoan').addEventListener('click', () => {
+                document.getElementById('editLoanModal').classList.add('hidden');
+            });
+
+            // Initialize chart
+            initializeChart();
+
+            // Initialize Firebase and start app
+            if (initializeFirebase()) {
+                console.log('App initialization complete');
             }
-        }
+        });
 
-        async function deleteLoanFromFirestore(loanId) {
-            if (!currentUser) return;
-
-            try {
-                await firestore.collection('users').doc(currentUser.uid).collection('loans').doc(loanId).delete();
-                console.log('Loan deleted from Firestore');
-            } catch (error) {
-                console.error('Error deleting loan:', error);
-                showError('データ削除エラー: ' + error.message);
-            }
-        }
-
-        async function clearAllDataFromFirestore() {
-            if (!currentUser) return;
-
-            try {
-                const userRef = firestore.collection('users').doc(currentUser.uid).collection('loans');
-                const snapshot = await userRef.get();
-                
-                const batch = firestore.batch();
-                snapshot.docs.forEach((doc) => {
-                    batch.delete(doc.ref);
-                });
-                
-                await batch.commit();
-                console.log('All data cleared from Firestore');
-            } catch (error) {
-                console.error('Error clearing data:', error);
-                showError('データクリアエラー: ' + error.message);
-            }
-        }
-
-        // Form handlers
-        async function handleNewLoanSubmit(event) {
-            event.preventDefault();
-            
-            const name = document.getElementById('loanName').value;
-            const amount = parseFloat(document.getElementById('loanAmount').value);
-            const interestRate = parseFloat(document.getElementById('interestRate').value);
-            const loanDate = document.getElementById('loanDate').value;
-            const enableAutoPayment = document.getElementById('enableAutoPayment').checked;
-            
-            let autoPayment = null;
-            if (enableAutoPayment) {
-                const paymentDay = document.getElementById('paymentDay').value;
-                const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
-                
-                if (!paymentDay || isNaN(paymentAmount) || paymentAmount <= 0) {
-                    alert('自動引き落とし設定に不備があります。引き落とし日と金額を確認してください。');
-                    return;
-                }
-                
-                autoPayment = {
-                    day: paymentDay,
-                    amount: paymentAmount,
-                    enabled: true
-                };
-            }
-
-            const newLoan = {
-                name: name,
-                initialAmount: amount,
-                currentAmount: amount,
-                interestRate: interestRate,
-                loanDate: loanDate,
-                autoPayment: autoPayment,
-                repayments: [],
-                interestAccrued: 0,
-                createdAt: new Date().toISOString()
-            };
-
-            await saveLoanToFirestore(newLoan);
-            
-            // Reset form
-            document.getElementById('newLoanForm').reset();
-            document.getElementById('loanDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('autoPaymentSettings').classList.add('hidden');
-        }
-
-        // Export/Import functions
-        function exportData() {
-            if (loans.length === 0) {
-                alert('エクスポートするデータがありません。');
-                return;
-            }
-
-            const dataStr = JSON.stringify(loans, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            
-            const exportFileName = 'cardrone_backup_' + new Date().toISOString().split('T')[0] + '.json';
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileName);
-            linkElement.click();
-        }
-
-        async function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (Array.isArray(importedData)) {
-                        if (confirm('インポートすると現在のデータを上書きします。よろしいですか？')) {
-                            // Clear existing data
-                            await clearAllDataFromFirestore();
-                            
-                            // Import new data
-                            for (const loan of importedData) {
-                                delete loan.id; // Remove old ID to create new one
-                                await saveLoanToFirestore(loan);
-                            }
-                            
-                            alert('データをインポートしました。');
-                        }
-                    } else {
-                        alert('無効なデータ形式です。');
-                    }
-                } catch (error) {
-                    alert('データのインポートに失敗しました: ' + error.message);
-                }
-            };
-            reader.readAsText(file);
-            
-            // Reset the file input
-            event.target.value = null;
-        }
-
-        async function clearData() {
-            if (confirm('全てのデータを削除します。この操作は元に戻せません。よろしいですか？')) {
-                await clearAllDataFromFirestore();
-                alert('全てのデータを削除しました。');
-            }
-        }
-
-        // Chart initialization
+        // Initialize chart
         function initializeChart() {
             const ctx = document.getElementById('totalDebtChart').getContext('2d');
             totalDebtChart = new Chart(ctx, {
@@ -927,13 +723,341 @@
             });
         }
 
-        // UI update functions
-        function updateUI() {
-            updateLoansList();
-            updateSummaryStatistics();
+        // Handle form submission for new loan
+        async function handleNewLoanSubmit(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('loanName').value;
+            const amount = parseFloat(document.getElementById('loanAmount').value);
+            const interestRate = parseFloat(document.getElementById('interestRate').value);
+            const loanDate = document.getElementById('loanDate').value;
+            const enableAutoPayment = document.getElementById('enableAutoPayment').checked;
+            
+            let autoPayment = null;
+            if (enableAutoPayment) {
+                const paymentDay = document.getElementById('paymentDay').value;
+                const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+                
+                if (!paymentDay || isNaN(paymentAmount) || paymentAmount <= 0) {
+                    alert('自動引き落とし設定に不備があります。引き落とし日と金額を確認してください。');
+                    return;
+                }
+                
+                autoPayment = {
+                    day: paymentDay,
+                    amount: paymentAmount,
+                    enabled: true
+                };
+            }
+
+            const newLoan = {
+                id: Date.now().toString(),
+                name: name,
+                initialAmount: amount,
+                currentAmount: amount,
+                interestRate: interestRate,
+                loanDate: loanDate,
+                autoPayment: autoPayment,
+                repayments: [],
+                interestAccrued: 0
+            };
+
+            loans.push(newLoan);
+            await saveLoanToFirestore(newLoan);
+            
+            // Reset form
+            document.getElementById('newLoanForm').reset();
+            document.getElementById('loanDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('autoPaymentSettings').classList.add('hidden');
+            
+            updateUI();
         }
 
-        function updateLoansList() {
+        // Handle repayment form submission
+        async function handleRepaymentSubmit(event) {
+            event.preventDefault();
+            
+            const loanId = document.getElementById('repaymentLoanId').value;
+            const date = document.getElementById('repaymentDate').value;
+            const amount = parseFloat(document.getElementById('repaymentAmount').value);
+            const note = document.getElementById('repaymentNote').value;
+            
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            // Calculate interest accrued since last repayment or loan creation
+            let lastDate = loan.loanDate;
+            if (loan.repayments.length > 0) {
+                loan.repayments.sort((a, b) => new Date(a.date) - new Date(b.date));
+                lastDate = loan.repayments[loan.repayments.length - 1].date;
+            }
+            
+            const daysSinceLastPayment = (new Date(date) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
+            const interestAccrued = calculateDailyInterest(loan.currentAmount, loan.interestRate) * daysSinceLastPayment;
+            
+            // Add interest to the loan
+            loan.interestAccrued += interestAccrued;
+            loan.currentAmount += interestAccrued;
+            
+            // Apply payment
+            const newAmount = Math.max(0, loan.currentAmount - amount);
+            
+            const repayment = {
+                date: date,
+                amount: amount,
+                note: note,
+                interestAccrued: interestAccrued,
+                remainingAmount: newAmount,
+                automatic: false
+            };
+            
+            loan.repayments.push(repayment);
+            loan.currentAmount = newAmount;
+            
+            await saveUserData();
+            document.getElementById('repaymentModal').classList.add('hidden');
+            updateUI();
+        }
+
+        // Handle auto payment form submission
+        async function handleAutoPaymentSubmit(event) {
+            event.preventDefault();
+            
+            const loanId = document.getElementById('autoPaymentLoanId').value;
+            const enableAutoPayment = document.getElementById('editEnableAutoPayment').checked;
+            
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            if (enableAutoPayment) {
+                const paymentDay = document.getElementById('editPaymentDay').value;
+                const paymentAmount = parseFloat(document.getElementById('editPaymentAmount').value);
+                
+                if (!paymentDay || isNaN(paymentAmount) || paymentAmount <= 0) {
+                    alert('自動引き落とし設定に不備があります。引き落とし日と金額を確認してください。');
+                    return;
+                }
+                
+                loan.autoPayment = {
+                    day: paymentDay,
+                    amount: paymentAmount,
+                    enabled: true
+                };
+            } else {
+                if (loan.autoPayment) {
+                    loan.autoPayment.enabled = false;
+                } else {
+                    loan.autoPayment = {
+                        day: '1',
+                        amount: 0,
+                        enabled: false
+                    };
+                }
+            }
+            
+            await saveUserData();
+            document.getElementById('autoPaymentModal').classList.add('hidden');
+            updateUI();
+        }
+
+        // Handle edit loan form submission
+        async function handleEditLoanSubmit(event) {
+            event.preventDefault();
+            
+            const loanId = document.getElementById('editLoanId').value;
+            const name = document.getElementById('editLoanName').value;
+            const interestRate = parseFloat(document.getElementById('editInterestRate').value);
+            
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            loan.name = name;
+            loan.interestRate = interestRate;
+            
+            await saveUserData();
+            document.getElementById('editLoanModal').classList.add('hidden');
+            updateUI();
+        }
+
+        // Open repayment modal
+        function openRepaymentModal(loanId) {
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            document.getElementById('repaymentLoanId').value = loanId;
+            document.getElementById('repaymentDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('repaymentAmount').value = '';
+            document.getElementById('repaymentNote').value = '';
+            
+            document.getElementById('repaymentModal').classList.remove('hidden');
+        }
+
+        // Open auto payment modal
+        function openAutoPaymentModal(loanId) {
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            document.getElementById('autoPaymentLoanId').value = loanId;
+            
+            if (loan.autoPayment) {
+                document.getElementById('editEnableAutoPayment').checked = loan.autoPayment.enabled;
+                document.getElementById('editPaymentDay').value = loan.autoPayment.day;
+                document.getElementById('editPaymentAmount').value = loan.autoPayment.amount;
+                document.getElementById('editAutoPaymentSettings').classList.toggle('hidden', !loan.autoPayment.enabled);
+            } else {
+                document.getElementById('editEnableAutoPayment').checked = false;
+                document.getElementById('editPaymentDay').value = '';
+                document.getElementById('editPaymentAmount').value = '';
+                document.getElementById('editAutoPaymentSettings').classList.add('hidden');
+            }
+            
+            document.getElementById('autoPaymentModal').classList.remove('hidden');
+        }
+
+        // Open edit loan modal
+        function openEditLoanModal(loanId) {
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            document.getElementById('editLoanId').value = loanId;
+            document.getElementById('editLoanName').value = loan.name;
+            document.getElementById('editInterestRate').value = loan.interestRate;
+            
+            document.getElementById('editLoanModal').classList.remove('hidden');
+        }
+
+        // Delete a loan
+        async function deleteLoan(loanId) {
+            if (!confirm('このローンを削除してもよろしいですか？この操作は元に戻せません。')) {
+                return;
+            }
+            
+            const index = loans.findIndex(l => l.id === loanId);
+            if (index !== -1) {
+                loans.splice(index, 1);
+                await saveUserData();
+                updateUI();
+            }
+        }
+
+        // Delete a repayment
+        async function deleteRepayment(loanId, repaymentIndex) {
+            if (!confirm('この返済記録を削除してもよろしいですか？この操作は元に戻せません。')) {
+                return;
+            }
+            
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            // This is a simplified implementation and doesn't recalculate interest properly
+            // A more accurate implementation would recalculate all subsequent repayments
+            loan.repayments.splice(repaymentIndex, 1);
+            
+            // Recalculate the current amount based on initial amount and all remaining repayments
+            loan.currentAmount = loan.initialAmount;
+            loan.interestAccrued = 0;
+            
+            let lastDate = loan.loanDate;
+            
+            if (loan.repayments.length > 0) {
+                // Sort repayments by date
+                loan.repayments.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                // Recalculate for each repayment
+                for (let i = 0; i < loan.repayments.length; i++) {
+                    const repayment = loan.repayments[i];
+                    
+                    // Calculate interest since last date
+                    const daysSinceLastPayment = (new Date(repayment.date) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
+                    const interestAccrued = calculateDailyInterest(loan.currentAmount, loan.interestRate) * daysSinceLastPayment;
+                    
+                    // Update loan values
+                    loan.interestAccrued += interestAccrued;
+                    loan.currentAmount += interestAccrued;
+                    
+                    // Apply payment
+                    loan.currentAmount = Math.max(0, loan.currentAmount - repayment.amount);
+                    
+                    // Update repayment record
+                    repayment.interestAccrued = interestAccrued;
+                    repayment.remainingAmount = loan.currentAmount;
+                    
+                    // Update last date
+                    lastDate = repayment.date;
+                }
+            }
+            
+            await saveUserData();
+            updateUI();
+        }
+
+        // Check for automatic payments
+        function checkAutomaticPayments() {
+            const today = new Date();
+            const currentDay = today.getDate();
+            const isLastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() === currentDay;
+            
+            loans.forEach(async (loan) => {
+                if (loan.autoPayment && loan.autoPayment.enabled && loan.currentAmount > 0) {
+                    const shouldProcess = 
+                        (loan.autoPayment.day === 'end' && isLastDay) || 
+                        (parseInt(loan.autoPayment.day) === currentDay);
+                    
+                    if (shouldProcess) {
+                        // Check if we already have an automatic payment for today
+                        const todayString = today.toISOString().split('T')[0];
+                        const alreadyProcessed = loan.repayments.some(r => 
+                            r.date === todayString && r.automatic === true
+                        );
+                        
+                        if (!alreadyProcessed) {
+                            await processAutomaticPayment(loan, todayString);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Process automatic payment
+        async function processAutomaticPayment(loan, date) {
+            // Calculate interest accrued since last repayment
+            let lastDate = loan.loanDate;
+            if (loan.repayments.length > 0) {
+                loan.repayments.sort((a, b) => new Date(a.date) - new Date(b.date));
+                lastDate = loan.repayments[loan.repayments.length - 1].date;
+            }
+            
+            const daysSinceLastPayment = (new Date(date) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
+            const interestAccrued = calculateDailyInterest(loan.currentAmount, loan.interestRate) * daysSinceLastPayment;
+            
+            // Add interest to the loan
+            loan.interestAccrued += interestAccrued;
+            loan.currentAmount += interestAccrued;
+            
+            // Determine payment amount (don't overpay)
+            const paymentAmount = Math.min(loan.autoPayment.amount, loan.currentAmount);
+            
+            // Apply payment
+            const newAmount = loan.currentAmount - paymentAmount;
+            
+            const repayment = {
+                date: date,
+                amount: paymentAmount,
+                note: '自動引き落とし',
+                interestAccrued: interestAccrued,
+                remainingAmount: newAmount,
+                automatic: true
+            };
+            
+            loan.repayments.push(repayment);
+            loan.currentAmount = newAmount;
+            
+            await saveUserData();
+        }
+
+        // Update UI elements
+        function updateUI() {
+            // Update loans list
             const loansListElement = document.getElementById('loansList');
             const noLoansMessage = document.getElementById('noLoansMessage');
             
@@ -954,17 +1078,24 @@
                     loansListElement.appendChild(loanElement);
                 });
             }
+            
+            // Update summary statistics
+            updateSummaryStatistics();
+            
+            // Check for automatic payments
+            checkAutomaticPayments();
         }
 
+        // Create loan element
         function createLoanElement(loan) {
             const loanCard = document.createElement('div');
             loanCard.className = 'bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-200';
             
             // Calculate total paid amount
-            const totalPaid = loan.repayments ? loan.repayments.reduce((sum, repayment) => sum + repayment.amount, 0) : 0;
+            const totalPaid = loan.repayments.reduce((sum, repayment) => sum + repayment.amount, 0);
             // Calculate percentages for progress bar
             const percentagePaid = loan.initialAmount > 0 ? Math.min(100, (totalPaid / loan.initialAmount) * 100) : 0;
-            const percentageInterest = loan.initialAmount > 0 ? ((loan.interestAccrued || 0) / loan.initialAmount) * 100 : 0;
+            const percentageInterest = loan.initialAmount > 0 ? (loan.interestAccrued / loan.initialAmount) * 100 : 0;
             
             // Determine status badge
             let statusBadge = '';
@@ -1035,7 +1166,7 @@
                     </div>
                     <div class="flex justify-between text-sm mb-1">
                         <span>利息発生状況</span>
-                        <span>${formatCurrency(loan.interestAccrued || 0)} (${Math.round(percentageInterest)}%)</span>
+                        <span>${formatCurrency(loan.interestAccrued)} (${Math.round(percentageInterest)}%)</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5 mb-3">
                         <div class="bg-orange-500 h-2.5 rounded-full" style="width: ${percentageInterest}%"></div>
@@ -1053,8 +1184,8 @@
                 
                 <div class="mt-4">
                     <h4 class="font-medium mb-2">返済履歴</h4>
-                    ${!loan.repayments || loan.repayments.length === 0 ? '<p class="text-sm text-gray-500 text-center py-2">返済履歴がありません</p>' : ''}
-                    ${loan.repayments && loan.repayments.length > 0 ? `
+                    ${loan.repayments.length === 0 ? '<p class="text-sm text-gray-500 text-center py-2">返済履歴がありません</p>' : ''}
+                    ${loan.repayments.length > 0 ? `
                         <div class="max-h-48 overflow-y-auto">
                             <table class="w-full">
                                 <thead>
@@ -1088,11 +1219,12 @@
             return loanCard;
         }
 
+        // Update summary statistics
         function updateSummaryStatistics() {
             const totalLoanAmount = loans.reduce((sum, loan) => sum + loan.initialAmount, 0);
-            const totalRepaidAmount = loans.reduce((sum, loan) => sum + (loan.repayments ? loan.repayments.reduce((sum, r) => sum + r.amount, 0) : 0), 0);
+            const totalRepaidAmount = loans.reduce((sum, loan) => sum + loan.repayments.reduce((sum, r) => sum + r.amount, 0), 0);
             const totalRemainingAmount = loans.reduce((sum, loan) => sum + loan.currentAmount, 0);
-            const totalInterestAmount = loans.reduce((sum, loan) => sum + (loan.interestAccrued || 0), 0);
+            const totalInterestAmount = loans.reduce((sum, loan) => sum + loan.interestAccrued, 0);
             
             document.getElementById('totalLoanAmount').textContent = formatCurrency(totalLoanAmount);
             document.getElementById('totalRepaidAmount').textContent = formatCurrency(totalRepaidAmount);
@@ -1103,107 +1235,6 @@
             totalDebtChart.data.datasets[0].data = [totalRemainingAmount, totalRepaidAmount - totalInterestAmount];
             totalDebtChart.update();
         }
-
-        // Modal functions (simplified for now)
-        function openRepaymentModal(loanId) {
-            // TODO: Implement repayment modal
-            alert('返済記録機能は近日実装予定です。');
-        }
-
-        function openAutoPaymentModal(loanId) {
-            // TODO: Implement auto payment modal
-            alert('自動引き落とし設定機能は近日実装予定です。');
-        }
-
-        function openEditLoanModal(loanId) {
-            // TODO: Implement edit loan modal
-            alert('ローン編集機能は近日実装予定です。');
-        }
-
-        async function deleteLoan(loanId) {
-            if (!confirm('このローンを削除してもよろしいですか？この操作は元に戻せません。')) {
-                return;
-            }
-            
-            await deleteLoanFromFirestore(loanId);
-        }
-
-        function deleteRepayment(loanId, repaymentIndex) {
-            // TODO: Implement delete repayment
-            alert('返済記録削除機能は近日実装予定です。');
-        }
-
-        // Initialize app
-        async function initializeApp() {
-            try {
-                console.log('Starting app initialization...');
-                showLoadingScreen();
-
-                // Wait for Firebase initialization
-                const firebaseInitialized = await initializeFirebase();
-                if (!firebaseInitialized) {
-                    throw new Error('Firebase initialization failed');
-                }
-
-                // Initialize UI components
-                initializeChart();
-                
-                // Setup form
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('loanDate').value = today;
-                
-                // Populate day select boxes
-                const daySelects = [document.getElementById('paymentDay'), document.getElementById('editPaymentDay')];
-                daySelects.forEach(select => {
-                    for (let i = 1; i <= 31; i++) {
-                        const option = document.createElement('option');
-                        option.value = i;
-                        option.textContent = `${i}日`;
-                        select.appendChild(option);
-                    }
-                    // Add end of month option
-                    const endOption = document.createElement('option');
-                    endOption.value = 'end';
-                    endOption.textContent = '月末';
-                    select.appendChild(endOption);
-                });
-
-                // Setup event listeners
-                document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);
-                document.getElementById('anonymousLoginBtn').addEventListener('click', signInAnonymously);
-                document.getElementById('logoutBtn').addEventListener('click', signOut);
-                document.getElementById('newLoanForm').addEventListener('submit', handleNewLoanSubmit);
-                
-                document.getElementById('enableAutoPayment').addEventListener('change', function() {
-                    document.getElementById('autoPaymentSettings').classList.toggle('hidden', !this.checked);
-                });
-                
-                // Data management
-                document.getElementById('exportDataBtn').addEventListener('click', exportData);
-                document.getElementById('importDataBtn').addEventListener('click', () => {
-                    document.getElementById('importDataInput').click();
-                });
-                document.getElementById('importDataInput').addEventListener('change', importData);
-                document.getElementById('clearDataBtn').addEventListener('click', clearData);
-
-                console.log('App initialization complete');
-            } catch (error) {
-                console.error('App initialization error:', error);
-                showError('アプリケーション初期化エラー: ' + error.message);
-            }
-        }
-
-        // Start the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
-
-
-    <script id="html_badge_script1">
-        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
-            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDn81XNdJsb7AyKtijCLsBp8Uyq706gOywDZwup%2Bw%2F5sBnsPNpZjL25%2FuVWlQHXAPhypFeOGWucjXrDi13%2BQya90YcQPw6vL7AcXPeMEOsXgr9cVNnYUtdc0fAVLx6FpBtjjx%2Bj9u%2BECrs2Hs1aBw4o8Oo201JeaablXEbiOBJe%2BRGOnzlh%2FKBQr%2BC6fZC3p0JqMVbZ8A5BJps8v7eojYijZnfD2xKHUdgmhk5iWOgvY9b2XeyMuDcgQRKnaA5S07lw1O6kakKFfoW1Jzr2iidFd1Ur5gmF3X%2F7nNZXj81Lf%2B9t0DV2AtZGDGhk5nXmoAgnxiTf%2BKe42M94vk4IPiTTkajtV7FrFehE7y0NarEM2paCmuCCZOgHSIIWfL76OZPgTaMQVjkwyXAuHbANggGgTQG4Pa3z3eNYaZE%2Fmb5GeZEhBrDFBBNQwn3zCBp75sAqm3CW6sqIysmr4eXgOv2JMpDVkdbnhxSZVIhmPQX%2Fa8zOkSFamarOJEZwcXy48AMQ%3D%3D";
-        window.__genspark_locale = "ja-JP";
-        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDn81XNdJsb7AyKtijCLsBp8Uyq706gOywDZwup+w/5sBnsPNpZjL25/uVWlQHXAPhypFeOGWucjXrDi13+Qya90YcQPw6vL7AcXPeMEOsXgr9cVNnYUtdc0fAVLx6FpBtjjx+j9u+ECrs2Hs1aBw4o8Oo201JeaablXEbiOBJe+RGOnzlh/KBQr+C6fZC3p0JqMVbZ8A5BJps8v7eojYijZnfD2xKHUdgmhk5iWOgvY9b2XeyMuDcgQRKnaA5S07lw1O6kakKFfoW1Jzr2iidFd1Ur5gmF3X/7nNZXj81Lf+9t0DV2AtZGDGhk5nXmoAgnxiTf+Ke42M94vk4IPiTTkajtV7FrFehE7y0NarEM2paCmuCCZOgHSIIWfL76OZPgTaMQVjkwyXAuHbANggGgTQG4Pa3z3eNYaZE/mb5GeZEhBrDFBBNQwn3zCBp75sAqm3CW6sqIysmr4eXgOv2JMpDVkdbnhxSZVIhmPQX/a8zOkSFamarOJEZwcXy48AMQ==";
-    </script>
-    
-    <script id="html_notice_dialog_script" src="./index_files/notice_dialog.js.ダウンロード"></script>
-    <div id="eagle-drag-images" style="position: fixed; top: -100000px;"></div></body></html>
+</body>
+</html>
